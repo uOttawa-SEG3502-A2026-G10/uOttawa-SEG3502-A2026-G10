@@ -1,0 +1,18 @@
+<div class="grid">
+    <label for="firstNum">Premier nombre:</label>
+    <input name="firstNum" id="firstNum" [(ngModel)]="firstNum" type="number">
+
+    <label for="secondNum">Second nombre:</label>
+    <input name="secondNum" id="secondNum" [(ngModel)]="secondNum" type="number">
+
+    <label for="result">Résultat:</label>
+    <input name="result" id="result" [(ngModel)]="result" readonly>
+
+    <div class="buttons">
+        <button (click)="sum()">+</button>
+        <button (click)="subtract()">-</button>
+        <button (click)="multiply()">*</button>
+        <button (click)="divide()">/</button>
+    </div>
+
+</div>
