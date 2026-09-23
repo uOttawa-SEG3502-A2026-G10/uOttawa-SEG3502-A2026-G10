@@ -1,34 +1,72 @@
 body {
     background-color: lightgray;
-    margin-left: 70px;
-    margin-top: 20px;
+    margin: 20px;
 }
 
 h1 {
-    font-size: 30px;
+    font-size: large;
     font-family: serif;
     font-weight: bold;
-    background-color: aliceblue;
+    text-align: center;
 }
 
 input {
     border-style: double;
-    font-size: 18px;
     width: 150px;
+    max-width: 100%;
+    box-sizing: border-box;
 }
+
 button {
     background-color: darkcyan;
     padding: 20px 25px;
     font-size: 18px;
     color: white;
+    cursor: pointer;
 }
 
 label {
     font-size: 20px;
 }
 
-p {
+.error {
     font-size: 20px;
     color: red;
     font-weight: bold;
+    text-align: center;
+}
+
+.calculator {
+    display: grid;
+    grid-template-columns: auto 150px;
+    justify-content: center;
+    gap: 10px 20px;
+}
+
+.buttons {
+    grid-column: span 2;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding-top: 20px;
+}
+
+@media (max-width: 480px) {
+    .calculator {
+        grid-template-columns: minmax(0, 1fr);
+        justify-content: stretch;
+    }
+
+    input {
+        width: 100%;
+    }
+
+    .buttons {
+        grid-column: 1;
+        flex-wrap: wrap;
+    }
+
+    button {
+        flex: 1 1 calc(50% - 10px);
+    }
 }
