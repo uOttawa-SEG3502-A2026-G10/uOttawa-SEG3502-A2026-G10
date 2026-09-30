@@ -18,4 +18,12 @@ describe('ShoppingList', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should emit the index of the item to delete', () => {
+    const emitSpy = vi.spyOn(component.itemDeleted, 'emit');
+
+    component.deleteItem(1);
+
+    expect(emitSpy).toHaveBeenCalledWith(1);
+  });
 });

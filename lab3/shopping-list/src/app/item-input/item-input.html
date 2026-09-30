@@ -1,1 +1,11 @@
-<p>item-input works!</p>
+<form (ngSubmit)="addItem()">
+  <label for="item">Nouvel article</label>
+  <input
+    id="item"
+    name="item"
+    type="text"
+    [(ngModel)]="item"
+    placeholder="Ex. brocoli"
+  >
+  <button type="submit">Ajouter</button>
+</form>

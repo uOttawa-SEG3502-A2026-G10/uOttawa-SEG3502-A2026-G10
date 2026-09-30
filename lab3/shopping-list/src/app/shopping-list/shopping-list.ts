@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   imports: [],
@@ -6,4 +6,11 @@ import { Component } from '@angular/core';
   styleUrl: './shopping-list.css',
   templateUrl: './shopping-list.html',
 })
-export class ShoppingList {}
+export class ShoppingList {
+  @Input() items: string[] = [];
+  @Output() itemDeleted = new EventEmitter<number>();
+
+  deleteItem(index: number): void {
+    this.itemDeleted.emit(index);
+  }
+}

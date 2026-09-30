@@ -1,1 +1,10 @@
-<p>shopping-list works!</p>
+<ul>
+  @for (item of items; track $index) {
+    <li>
+      <span>{{ item }}</span>
+      <button type="button" (click)="deleteItem($index)">Supprimer</button>
+    </li>
+  } @empty {
+    <li>La liste est vide.</li>
+  }
+</ul>
