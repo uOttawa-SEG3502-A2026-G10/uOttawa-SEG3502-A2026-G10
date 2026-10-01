@@ -1,8 +1,14 @@
-<main>
-  <h1>Liste de courses</h1>
-  <app-item-input (itemAdded)="addItem($event)" />
-  <app-shopping-list
-    [items]="items"
-    (itemDeleted)="removeItem($event)"
-  />
+<main class="container py-5">
+    <div class="card shadow-sm mx-auto" style="max-width: 600px;">
+        <div class="card-body p-4">
+            <h1 class="text-center mb-4">Liste de courses</h1>
+
+            <app-item-input (itemAdded)="addItem($event)" />
+
+            <app-shopping-list
+                [items]="items"
+                (itemDeleted)="removeItem($event)"
+            />
+        </div>
+    </div>
 </main>

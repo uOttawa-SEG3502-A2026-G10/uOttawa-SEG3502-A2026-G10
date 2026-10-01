@@ -1,11 +1,16 @@
 <form (ngSubmit)="addItem()">
-  <label for="item">Nouvel article</label>
-  <input
-    id="item"
-    name="item"
-    type="text"
-    [(ngModel)]="item"
-    placeholder="Ex. brocoli"
-  >
-  <button type="submit">Ajouter</button>
+    <div class="mb-3">
+        <label for="item" class="form-label">Nouvel article</label>
+
+        <input
+            id="item"
+            name="item"
+            type="text"
+            class="form-control"
+            [(ngModel)]="item"
+            placeholder="Ex. brocoli"
+        >
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Ajouter</button>
 </form>
