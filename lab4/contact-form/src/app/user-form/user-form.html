@@ -1,0 +1,56 @@
+<h1>Informations utilisateur</h1>
+
+<form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+
+    <!-- Prénom -->
+    <div>
+        <label for="firstName">Prénom :</label>
+        <input id="firstName" type="text" formControlName="firstName"/>
+
+        @if (userForm.controls.firstName.touched &&
+        userForm.controls.firstName.hasError('required')) {
+            <p class="error">Le prénom est obligatoire.</p>
+        }
+    </div>
+
+    <!-- Nom -->
+    <div>
+        <label for="lastName">Nom de famille :</label>
+        <input id="lastName" type="text" formControlName="lastName"/>
+
+        @if (userForm.controls.lastName.touched &&
+        userForm.controls.lastName.hasError('required')) {
+            <p class="error">Le nom de famille est obligatoire.</p>
+        }
+    </div>
+
+    <!-- Téléphone -->
+    <div>
+        <label for="phone">Numéro de téléphone :</label>
+        <input id="phone" type="tel" formControlName="phone" placeholder="6131234567"/>
+
+        @if (userForm.controls.phone.touched &&
+        userForm.controls.phone.hasError('invalidPhone')) {
+            <p class="error">
+                Le numéro doit comporter 10 chiffres et ses premier et quatrième
+                chiffres doivent être différents de 0.
+            </p>
+        }
+    </div>
+
+    <!-- Email -->
+    <div>
+        <label for="email">Email :</label>
+        <input id="email" type="email" formControlName="email"/>
+
+        @if (userForm.controls.email.touched &&
+        userForm.controls.email.hasError('email')) {
+            <p class="error">Veuillez entrer une adresse courriel valide.</p>
+        }
+    </div>
+
+    <button type="submit">
+        Soumettre
+    </button>
+
+</form>
