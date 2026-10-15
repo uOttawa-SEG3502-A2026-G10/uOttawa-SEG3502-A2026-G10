@@ -1,0 +1,23 @@
+@startuml CAR-HMS-Context
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor Visiteur
+actor "Randonneur" as Hiker
+actor "Organisateur de randonnée" as Organizer
+actor Administrateur as Admin
+actor "Service météorologique" as Weather
+actor "Source de données CCN" as NCC
+cloud "Service de courriel" as Email
+
+rectangle "CAR-HMS\nSystème de gestion des événements de randonnée" as CAR
+
+Visiteur --> CAR : consulter les randonnées ouvertes\ncommencer l'enregistrement
+Hiker --> CAR : s'inscrire / annuler\nconsulter / mettre à jour son profil
+Organizer --> CAR : créer / annuler une randonnée
+Admin --> CAR : gérer les randonneurs\napprouver les organisateurs\nannuler / produire des rapports
+CAR --> NCC : lire les données publiées\nsur les sentiers
+CAR --> Weather : demander les prévisions
+CAR --> Email : envoyer confirmations,\nrappels et avis
+@enduml
