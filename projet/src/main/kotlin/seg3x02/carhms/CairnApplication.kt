@@ -1,4 +1,4 @@
-package seg3x02.cairn
+package seg3x02.carhms
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
