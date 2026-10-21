@@ -38,8 +38,14 @@ export class EmployeeComponent {
       this.salary.value,
       this.gender.value,
       this.email.value);
-    this.employeeService.addEmployee(employee);
-    this.employeeForm.reset();
-    this.router.navigate(['/employees']).then(() => {});
+    this.employeeService.addEmployee(employee)
+      .then(() => {
+        this.employeeForm.reset();
+        this.router.navigate(['/employees']).then(() => {});
+      })
+      .catch((error: unknown) => {
+        console.error('Unable to save employee to Firestore', error);
+        window.alert('Unable to save the employee. Please try again.');
+      });
   }
 }

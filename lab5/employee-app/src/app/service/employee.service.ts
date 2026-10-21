@@ -1,19 +1,37 @@
-import { Injectable } from '@angular/core';
-import {BehaviorSubject, Observable} from "rxjs";
-import {Employee} from "../model/employee";
+import { Injectable, inject } from '@angular/core';
+import {
+  addDoc,
+  collection,
+  collectionData,
+  Firestore
+} from '@angular/fire/firestore';
+import { Timestamp } from 'firebase/firestore';
+import { map, Observable } from 'rxjs';
+import { Employee } from '../model/employee';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EmployeeService {
-  employees$: BehaviorSubject<readonly Employee[]> = new BehaviorSubject<readonly Employee[]>([]);
+  private readonly firestore = inject(Firestore);
 
-  get $(): Observable<readonly Employee[]> {
-    return this.employees$;
-  }
+  // Keep one stable observable instance; the list template uses it with AsyncPipe.
+  readonly $: Observable<readonly Employee[]> = collectionData(
+    collection(this.firestore, 'employees')
+  ).pipe(
+    map(records => records.map(record => {
+      const storedDate = record['dateOfBirth'];
+      const dateOfBirth = storedDate instanceof Timestamp
+        ? storedDate.toDate()
+        : storedDate instanceof Date
+          ? storedDate
+          : new Date(storedDate as string | number);
+      return { ...record, dateOfBirth } as Employee;
+    }))
+  );
 
   addEmployee(employee: Employee) {
-    this.employees$.next([...this.employees$.getValue(), employee]);
-    return true;
+    const employees = collection(this.firestore, 'employees');
+    return addDoc(employees, { ...employee });
   }
 }
