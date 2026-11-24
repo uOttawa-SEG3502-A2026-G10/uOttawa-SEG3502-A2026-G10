@@ -1,4 +1,44 @@
-# Modèles du domaine
+# Livrable 2: Domaine
+
+SEG 3502 - ARCHITECT. & CONCEPT. LOGICIEL
+
+Automne 2026
+
+École de Génie Électrique et Science Informatique
+Université d’Ottawa
+Professeur: Kalonji Kalala
+
+**CAR-HMS**
+Par uOCode-10
+
+
+Étudiant 1: Robichaud, Tristan (300391286, toxoscorp)
+Étudiant 2: Dufresne, Sebastien (300364803, SB2DD)
+
+## Sommaire exécutif
+
+Ce document présente l’implémentation du domaine CAR-HMS à l’intention de l’équipe, des mainteneurs et de l’évaluateur. Il décrit les hypothèses, les agrégats, les réalisations des neuf cas d’utilisation et leur vérification par contrats Cucumber exécutables.
+
+## Description de l'équipe et des rôles
+
+Les rôles sont les suivants :
+- Tristan Robichaud | Code Kotlin | 50% 
+- Sebastien Dufresne | Rapport | 50%
+
+## Hypothèses
+
+-	Les exigences utilisent deux échelles différentes pour décrire l'habileté des randonneurs et la difficulté des sentiers. Nous faisons donc correspondre débutant à facile, intermédiaire à modéré, avancé à difficile et expert à très difficile. Pour résoudre la différence de formulation entre le glossaire et le résumé du cas d'utilisation, un randonneur peut s'inscrire à toute randonnée de difficulté inférieure ou égale à son niveau augmenté d'un échelon. Un expert peut donc participer à une randonnée facile.
+-	La distribution des invitations est hors portée du système, mais leur validation est nécessaire à l'enregistrement. Nous supposons donc que les codes sont fournis par un processus externe, sans ajouter de fonction pour les créer ou les distribuer. Chaque code est à usage unique, sans expiration et sans rattachement préalable à un courriel. Le système vérifie séparément l'unicité du courriel normalisé. Un code n'est consommé que si l'enregistrement réussit entièrement: une erreur de formulaire ou un courriel déjà utilisé ne doit pas rendre l'invitation inutilisable.
+-	Le glossaire décrit une randonnée "terminée", alors que les exigences fonctionnelles ne demandent d'enregistrer que les statuts ouverte, complète, fermée et annulée. Nous conservons ces quatre statuts et calculons le caractère terminé lorsqu'une randonnée non annulée appartient à une date locale passée. Il n'y a donc pas de commande ni d'événement supplémentaire pour la terminer. Chaque transition enregistrée conserve le statut, l'instant, l'acteur et, pour une annulation, le motif. Une fermeture automatique est attribuée à SYSTEM, tandis qu'un passage à complète ou une réouverture est attribué à l'utilisateur dont l'action l'a provoqué.
+-	Toutes les règles calendaires sont interprétées dans le fuseau d'Ottawa, America/Toronto. À la création, le champ date fournit la date locale et startTime l'heure locale. Les autres échéances représentent des instants et les durées sont exprimées en minutes. Les changements d'heure suivent la résolution standard de java.time. Pour départager les formulations "échéance passée" et "échéance atteinte", les inscriptions et leurs annulations deviennent interdites dès l'instant exact de l'échéance, même si la fermeture automatique n'a pas encore été exécutée. L'échéance doit être future, strictement antérieure au départ et ne pas précéder sa date locale de plus de 14 jours civils.
+-	Nous considérons que la capacité, toujours strictement positive, désigne les places offertes aux participants et exclut l'organisateur. Une randonnée complète accepte encore des demandes avant l'échéance, mais les nouvelles inscriptions sont placées en attente. La consultation publique reste limitée aux randonnées ouvertes, conformément au résumé fourni. La priorité dépend de l'instant d'inscription, puis de l'ordre d'insertion dans le dépôt si deux instants sont identiques. Un randonneur ne peut avoir qu'une inscription active à la même randonnée. Après annulation, il peut se réinscrire, mais obtient une nouvelle inscription et perd son ancienne priorité ; l'inscription annulée est conservée.
+-	L'âge est évalué à la date d'enregistrement. Avant 18 ans, l'acceptation du tuteur remplace celle du mineur et son nom doit être consigné. Dès le 18e anniversaire, l'acceptation personnelle suffit. Une correction ultérieure de la naissance est refusée si elle rendrait la décharge initiale invalide faute de tuteur, car l'interface de mise à jour ne permet pas d'en recueillir une nouvelle. Pour les organisateurs, les dates de délivrance et d'expiration d'une certification sont inclusives. La certification doit être valide lors de son enregistrement et couvrir la date de toute randonnée créée. Une adhésion active est également requise pour créer une randonnée.
+-	Le club ne gère pas son propre catalogue de sentiers: le dépôt fournit des instantanés en lecture des données CCN, éventuellement disponibles en cache. Si les données nécessaires sont absentes, l'opération est refusée plutôt que de supposer le sentier valide. Comme les limites exactes des saisons ne sont pas définies dans les exigences, nous attendons des bornes calendaires explicites du fournisseur plutôt que d'inventer des dates d'été et d'hiver. Une saison sans bornes représente une ouverture annuelle. Les tests fournissent des données annuelles ou des bornes explicites. L'import et l'actualisation relèvent du futur adaptateur.
+-	Un rappel vise les inscriptions confirmées d'une randonnée prévue le lendemain civil, et non exactement 24 heures plus tard. L'absence de météo n'empêche pas son envoi: seul l'avertissement est omis, comme le prévoit le cas d'utilisation. Si le courriel échoue, l'opération métier demeure enregistrée et la notification passe à FAILED, avec un événement d'échec. Les détails techniques de l'erreur ne sont pas conservés afin d'éviter de divulguer des secrets. Lors d'une relance séquentielle, un rappel déjà envoyé n'est pas renvoyé: Un rappel en échec peut être réessayé. Cette règle ne garantit pas une livraison exactement une fois après un crash ou lors de traitements simultanés.
+-	Le système ne suit pas la présence physique aux randonnées. Nous interprétons donc le nombre de participants du futur rapport comme le nombre d'inscriptions confirmées aux randonnées non annulées, et non comme un décompte des présences réelles. Les bornes de période sont inclusives et portent sur les dates de départ. Le nombre total de randonnées inclut celles annulées, qui sont aussi comptées séparément. Cette interprétation prépare le modèle, mais l'implémentation du cas de rapport reste exclue du présent livrable.
+
+
+## Modèle du domaine
 
 ### Randonneurs et organisateurs
 
@@ -254,13 +294,11 @@ classDiagram
     TrailReportsFacade ..> TrailUsage
 ```
 
-------------------------------------------------------------------------------------------------------------------
+## Réalisation des cas d'utilisation
 
-# Cas d'utilisation
+### CU-01 - Parcourir les randonnées
 
-## CU-01 - Parcourir les randonnées
-
-### Niveau 1
+#### Niveau 1
 
 ```mermaid
 sequenceDiagram
@@ -287,7 +325,7 @@ sequenceDiagram
     Note over UC,TX: Lecture seule, aucun événement
 ```
 
-### Niveau 2
+#### Niveau 2
 
 ```mermaid
 sequenceDiagram
@@ -326,9 +364,9 @@ sequenceDiagram
     Note over UC: Construire HikeBrowseView, retourner hikes via execute
 ```
 
-## CU-02 - Enregistrer un randonneur
+### CU-02 - Enregistrer un randonneur
 
-### Niveau 1
+#### Niveau 1
 
 ```mermaid
 sequenceDiagram
@@ -353,7 +391,7 @@ sequenceDiagram
     UC-->>U: HikerIdDto(email)
 ```
 
-### Niveau 2
+#### Niveau 2
 
 ```mermaid
 sequenceDiagram
@@ -379,9 +417,9 @@ sequenceDiagram
     Note over UC,PR: Les quatre faits sont émis dans la même TX
 ```
 
-## CU-05 - S’inscrire à une randonnée
+### CU-05 - S’inscrire à une randonnée
 
-### Niveau 1
+#### Niveau 1
 
 ```mermaid
 sequenceDiagram
@@ -413,7 +451,7 @@ sequenceDiagram
     UC-->>U: SignUpResultDto
 ```
 
-### Niveau 2
+#### Niveau 2
 
 ```mermaid
 sequenceDiagram
@@ -454,9 +492,9 @@ sequenceDiagram
     Note over UC,HR: Émettre RegistrationCreated et transition éventuelle
 ```
 
-## CU-06 - Annuler une inscription
+### CU-06 - Annuler une inscription
 
-### Niveau 1
+#### Niveau 1
 
 ```mermaid
 sequenceDiagram
@@ -491,7 +529,7 @@ sequenceDiagram
     UC-->>U: Unit
 ```
 
-### Niveau 2
+#### Niveau 2
 
 ```mermaid
 sequenceDiagram
@@ -524,9 +562,9 @@ sequenceDiagram
     Note over UC,HR: Émettre annulation, promotion et transition éventuelles avant commit
 ```
 
-## CU-07 - Mettre à jour un randonneur
+### CU-07 - Mettre à jour un randonneur
 
-### Niveau 1
+#### Niveau 1
 
 ```mermaid
 sequenceDiagram
@@ -558,7 +596,7 @@ sequenceDiagram
     UC-->>U: Unit
 ```
 
-### Niveau 2
+#### Niveau 2
 
 ```mermaid
 sequenceDiagram
@@ -583,9 +621,9 @@ sequenceDiagram
     Note over UC,Repo: Émettre un fait par valeur modifiée dans la TX
 ```
 
-## CU-08 - Fermer une randonnée
+### CU-08 - Fermer une randonnée
 
-### Niveau 1
+#### Niveau 1
 
 ```mermaid
 sequenceDiagram
@@ -610,7 +648,7 @@ sequenceDiagram
     UC-->>S: Unit
 ```
 
-### Niveau 2
+#### Niveau 2
 
 ```mermaid
 sequenceDiagram
@@ -635,9 +673,9 @@ sequenceDiagram
     end
 ```
 
-## CU-09 - Envoyer un rappel
+### CU-09 - Envoyer un rappel
 
-### Niveau 1
+#### Niveau 1
 
 ```mermaid
 sequenceDiagram
@@ -669,7 +707,7 @@ sequenceDiagram
     UC-->>S: Unit
 ```
 
-### Niveau 2
+#### Niveau 2
 
 ```mermaid
 sequenceDiagram
@@ -720,9 +758,9 @@ sequenceDiagram
 
 Les appels de livraison sont centralisés dans `UseCaseEnvironment.notify`, partagé avec les confirmations, promotions et annulations. L’échec du transport est capturé ; l’échec d’une persistance reste une erreur à traiter par le futur adaptateur.
 
-## CU-10 - Créer une randonnée
+### CU-10 - Créer une randonnée
 
-### Niveau 1
+#### Niveau 1
 
 ```mermaid
 sequenceDiagram
@@ -748,7 +786,7 @@ sequenceDiagram
     UC-->>U: HikeIdDto
 ```
 
-### Niveau 2
+#### Niveau 2
 
 ```mermaid
 sequenceDiagram
@@ -782,9 +820,9 @@ sequenceDiagram
     Note over UC,Repo: Émettre création et transition OPEN avant commit
 ```
 
-## CU-11 - Annuler une randonnée
+### CU-11 - Annuler une randonnée
 
-### Niveau 1
+#### Niveau 1
 
 ```mermaid
 sequenceDiagram
@@ -818,7 +856,7 @@ sequenceDiagram
     UC-->>U: Unit
 ```
 
-### Niveau 2
+#### Niveau 2
 
 ```mermaid
 sequenceDiagram
@@ -855,3 +893,7 @@ sequenceDiagram
     end
     Note over UC,E: Commit avant toute livraison de courriel
 ```
+
+## Déclaration d'utilisation de l'IA générative
+
+Aucun outil d’intelligence artificielle générative n’a été utilisé pour ce livrable.
