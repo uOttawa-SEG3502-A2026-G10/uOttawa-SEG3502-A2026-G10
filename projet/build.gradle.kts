@@ -24,6 +24,10 @@ dependencies {
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("io.cucumber:cucumber-java:7.20.1")
+	testImplementation("io.cucumber:cucumber-junit-platform-engine:7.20.1")
+	testImplementation("org.junit.platform:junit-platform-suite")
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 kotlin {
